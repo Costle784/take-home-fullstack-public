@@ -1,20 +1,29 @@
-import axios from 'axios';
-import qs from 'querystring';
-import config from '../../../config';
+import axios from "axios";
+import qs from "querystring";
+import config from "../../../config";
 
 const { api } = config;
 
-export default async function makeRequest(path, resourceType) {
-  const { data: { access_token: token } } = await axios.post(
-    /* endpoint */,
-    /* something here */,
-    /* header stuff here */
-  );
+export default async function makeRequest(path) {
+    const {
+        data: { access_token },
+    } = await axios.post(
+        api.authUrl,
+        qs.stringify({
+            grant_type: "client_credentials",
+            client_secret: api.clientSecret,
+            client_id: api.clientId,
+        }),
+        {
+            headers: {
+                "content-type": "application/x-www-form-urlencoded",
+            },
+        }
+    );
 
-  const res = await axios.get(
-    /* endpoint here */,
-    /* header stuff here */
-  );
-
-  return res.data[resourceType].items;
+    return await axios.get(`${api.baseUrl}/${path}`, {
+        headers: {
+            Authorization: `Bearer ${access_token}`,
+        },
+    });
 }
